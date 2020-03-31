@@ -7,9 +7,12 @@ namespace WpfImhApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private StartViewModel viewModel;
         public MainWindow()
         {
             InitializeComponent();
+            viewModel = new StartViewModel();
+            DataContext = viewModel;
         }
     }
 }
