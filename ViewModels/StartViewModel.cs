@@ -46,6 +46,8 @@ namespace WpfImhApp
 
         private void handleConvertButtonClicked(object parameter)
         {
+            ImageConverter converter = new ImageConverter();
+            converter.Convert(ImagePath);
         }
 
         private bool canClickSelectButton(object parameter)
