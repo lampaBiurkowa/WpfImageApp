@@ -14,7 +14,23 @@ namespace WpfImhApp
         public bool Inited
         {
             get { return inited; }
-            set { inited = value; }
+            set
+            {
+                inited = value;
+                OnPropertyChange(nameof(Inited));
+            }
+        }
+
+        private string imagePath;
+
+        public string ImagePath
+        {
+            get { return imagePath; }
+            set
+            {
+                imagePath = value;
+                OnPropertyChange(nameof(ImagePath));
+            }
         }
 
         public StartViewModel()
@@ -39,9 +55,12 @@ namespace WpfImhApp
 
         private void handleSelectButtonClicked(object parameter)
         {
-            System.Console.WriteLine("e");
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.ShowDialog();
+            if (!(bool)openFileDialog.ShowDialog())
+                return;
+
+            ImagePath = openFileDialog.FileName;
+            Inited = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
