@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
-using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace WpfImhApp
@@ -8,6 +8,7 @@ namespace WpfImhApp
     public class StartViewModel : INotifyPropertyChanged
     {
         public ICommand ConvertButtonClickCommand { get; set; }
+        public ICommand ConvertAsyncButtonClickCommand { get; set; }
         public ICommand SelectButtonClickCommand { get; set; }
 
         private bool inited = false;
@@ -33,9 +34,34 @@ namespace WpfImhApp
             }
         }
 
+        private string asyncTime;
+
+        public string AsyncTime
+        {
+            get { return asyncTime; }
+            set
+            {
+                asyncTime = value;
+                OnPropertyChange(nameof(AsyncTime));
+            }
+        }
+
+        private string syncTime;
+
+        public string SyncTime
+        {
+            get { return syncTime; }
+            set
+            {
+                syncTime = value;
+                OnPropertyChange(nameof(SyncTime));
+            }
+        }
+
         public StartViewModel()
         {
             ConvertButtonClickCommand = new ClickCommand(handleConvertButtonClicked, canClickConvertButton);
+            ConvertAsyncButtonClickCommand = new ClickCommand(handleConvertAsyncButtonClicked, canClickConvertButton);
             SelectButtonClickCommand = new ClickCommand(handleSelectButtonClicked, canClickSelectButton);
         }
 
@@ -47,7 +73,21 @@ namespace WpfImhApp
         private void handleConvertButtonClicked(object parameter)
         {
             ImageConverter converter = new ImageConverter();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             converter.Convert(ImagePath);
+            stopwatch.Stop();
+            SyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
+        }
+
+        private void handleConvertAsyncButtonClicked(object parameter)
+        {
+            ImageConverter converter = new ImageConverter();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            converter.AConvert(ImagePath);
+            stopwatch.Stop();
+            AsyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
         }
 
         private bool canClickSelectButton(object parameter)
