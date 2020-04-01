@@ -82,10 +82,11 @@ namespace WpfImhApp
 
         private void handleConvertAsyncButtonClicked(object parameter)
         {
+            const int THREADS_COUNT = 20;
             ImageConverter converter = new ImageConverter();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            converter.AConvert(ImagePath);
+            converter.AConvert(ImagePath, THREADS_COUNT).Wait();
             stopwatch.Stop();
             AsyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
         }

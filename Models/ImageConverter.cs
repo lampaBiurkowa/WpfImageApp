@@ -7,33 +7,14 @@ namespace WpfImhApp
 {
     class ImageConverter
     {
+        /* Operating on pixels inspired by L.B 
+        * https://stackoverflow.com/questions/21497537/allow-an-image-to-be-accessed-by-several-threads */
+
         const float RED_FACTOR = 0.3f;
         const float GREEN_FACTOR = 0.58f;
         const float BLUE_FACTOR = 0.11f;
 
         public void Convert(string sourcePath)
-        {
-            Bitmap bitmap = new Bitmap(sourcePath);
-            for (int i = 0; i < bitmap.Width; i++)
-                for (int j = 0; j < bitmap.Height; j++)
-                    bitmap.SetPixel(i, j, getGrayscaleColor(bitmap.GetPixel(i, j)));
-
-            bitmap.Save("jea.png");
-        }
-
-        Color getGrayscaleColor(Color originalColor)
-        {
-            int r = (int)(originalColor.R * RED_FACTOR);
-            int g = (int)(originalColor.G * GREEN_FACTOR);
-            int b = (int)(originalColor.B * BLUE_FACTOR);
-            int val = (r + g + b) % 255;
-
-            return Color.FromArgb(255, val, val, val);
-        }
-
-        /* Inspired by L.B 
-        * https://stackoverflow.com/questions/21497537/allow-an-image-to-be-accessed-by-several-threads */
-        public async Task AConvert(string sourcePath)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width;
@@ -43,21 +24,15 @@ namespace WpfImhApp
             int bytesPerPixel = Image.GetPixelFormatSize(data.PixelFormat) / 8;
             byte[] buffer = new byte[data.Width * data.Height * bytesPerPixel];
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-            
-            for (int i = 0; i < bitmap.Height; i += 4)
-            {
-                Task t1 = Task.Factory.StartNew(() => aConvertRow(buffer, i, w, h, bytesPerPixel));
-                Task t2 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 1, w, h, bytesPerPixel));
-                Task t3 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 2, w, h, bytesPerPixel));
-                Task t4 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 3, w, h, bytesPerPixel));
-                Task.WaitAll(t1, t2, t3, t4);
-            }
+            for (int j = 0; j < bitmap.Height; j++)
+                convertRow(buffer, j, w, h, bytesPerPixel);
+
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);
-            bitmap.Save("jeaa2.png");
+            bitmap.Save("jea.png");
         }
 
-        private void aConvertRow(byte[] data, int y, int w, int h, int d)
+        private void convertRow(byte[] data, int y, int w, int h, int d)
         {
             if (y >= h)
                 return;
@@ -72,6 +47,42 @@ namespace WpfImhApp
                 data[index + 2] = grayScale.B;
                 data[index + 3] = 255;
             }
+        }
+
+        Color getGrayscaleColor(Color originalColor)
+        {
+            int r = (int)(originalColor.R * RED_FACTOR);
+            int g = (int)(originalColor.G * GREEN_FACTOR);
+            int b = (int)(originalColor.B * BLUE_FACTOR);
+            int val = (r + g + b) % 255;
+
+            return Color.FromArgb(255, val, val, val);
+        }
+
+        public async Task AConvert(string sourcePath, int threadsCount)
+        {
+            Bitmap bitmap = new Bitmap(sourcePath);
+            int w = bitmap.Width;
+            int h = bitmap.Height;
+            Rectangle rect = new Rectangle(0, 0, w, h);
+            BitmapData data = bitmap.LockBits(rect, ImageLockMode.ReadWrite, bitmap.PixelFormat);
+            int bytesPerPixel = Image.GetPixelFormatSize(data.PixelFormat) / 8;
+            byte[] buffer = new byte[data.Width * data.Height * bytesPerPixel];
+            Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
+
+            for (int i = 0; i < bitmap.Height; i += threadsCount)
+            {
+                Task[] tasks = new Task[threadsCount];
+                for (int j = 0; j < threadsCount; j++)
+                {
+                    int temp = j; //em
+                    tasks[temp] = Task.Factory.StartNew(() => convertRow(buffer, i + temp, w, h, bytesPerPixel));
+                }
+                Task.WaitAll(tasks);
+            }
+            Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
+            bitmap.UnlockBits(data);
+            bitmap.Save("jeaa2.png");
         }
     }
 }
