@@ -23,7 +23,7 @@
         <TextBlock Grid.Column="1" Grid.Row="1" Text="Image App" FontSize="24" TextAlignment="Center" Grid.ColumnSpan="2"/>
         <!-- ROW 2 -->
         <Button Grid.Column="1" Grid.Row="2" Command="{Binding SelectButtonClickCommand}" Content="Select image" Margin="5"/>
-        <Image Grid.Column="2" Grid.Row="2" x:Name="sourceImage" Source="{Binding ImagePath}" MaxHeight="500px"/>
+        <Image Grid.Column="2" Grid.Row="2" x:Name="sourceImage" Source="{Binding ImagePath}" MaxHeight="300px"/>
         <!-- ROW 3 -->
         <Button Grid.Column="1" Grid.Row="3" Command="{Binding ConvertButtonClickCommand}" Content="Convert image" Margin="5"/>
         <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding SyncTime}"/>

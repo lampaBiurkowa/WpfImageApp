@@ -46,10 +46,10 @@ namespace WpfImhApp
             
             for (int i = 0; i < bitmap.Height; i += 4)
             {
-                Task t1 = Task.Factory.StartNew(() => aConvertRow(buffer, i, w, h));
-                Task t2 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 1, w, h));
-                Task t3 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 2, w, h));
-                Task t4 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 3, w, h));
+                Task t1 = Task.Factory.StartNew(() => aConvertRow(buffer, i, w, h, bytesPerPixel));
+                Task t2 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 1, w, h, bytesPerPixel));
+                Task t3 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 2, w, h, bytesPerPixel));
+                Task t4 = Task.Factory.StartNew(() => aConvertRow(buffer, i + 3, w, h, bytesPerPixel));
                 Task.WaitAll(t1, t2, t3, t4);
             }
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
@@ -57,18 +57,20 @@ namespace WpfImhApp
             bitmap.Save("jeaa2.png");
         }
 
-        private void aConvertRow(byte[] data, int y, int w, int h)
+        private void aConvertRow(byte[] data, int y, int w, int h, int d)
         {
             if (y >= h)
                 return;
 
-            for (int i = 0; i < w; i += 4)
+            for (int i = 0; i < w; i++)
             {
-                Color colorful = Color.FromArgb(255, data[y * w + i], data[y * w + i + 1], data[y * w + i + 2]);
+                int index = (y * w + i) * d;
+                Color colorful = Color.FromArgb(255, data[index], data[index + 1], data[index + 2]);
                 Color grayScale = getGrayscaleColor(colorful);
-                data[y * w + i] = grayScale.R;
-                data[y * w + i + 1] = grayScale.G;
-                data[y * w + i + 2] = grayScale.B;
+                data[index] = grayScale.R;
+                data[index + 1] = grayScale.G;
+                data[index + 2] = grayScale.B;
+                data[index + 3] = 255;
             }
         }
     }
