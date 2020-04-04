@@ -86,7 +86,7 @@ namespace WpfImhApp
             ImageConverter converter = new ImageConverter();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            converter.AConvert(ImagePath, THREADS_COUNT).Wait();
+            converter.ConvertAsync(ImagePath, THREADS_COUNT).Wait();
             stopwatch.Stop();
             AsyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
         }

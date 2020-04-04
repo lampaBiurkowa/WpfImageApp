@@ -1,5 +1,7 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -59,7 +61,7 @@ namespace WpfImhApp
             return Color.FromArgb(255, val, val, val);
         }
 
-        public async Task AConvert(string sourcePath, int threadsCount)
+        public async Task ConvertAsync(string sourcePath, int threadsCount)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width;
@@ -70,16 +72,10 @@ namespace WpfImhApp
             byte[] buffer = new byte[data.Width * data.Height * bytesPerPixel];
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
+            List<int> range = Enumerable.Range(0, threadsCount).ToList();
             for (int i = 0; i < bitmap.Height; i += threadsCount)
-            {
-                Task[] tasks = new Task[threadsCount];
-                for (int j = 0; j < threadsCount; j++)
-                {
-                    int temp = j; //em
-                    tasks[temp] = Task.Factory.StartNew(() => convertRow(buffer, i + temp, w, h, bytesPerPixel));
-                }
-                Task.WaitAll(tasks);
-            }
+                Parallel.ForEach(range, j => convertRow(buffer, i + j, w, h, bytesPerPixel));
+            
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);
             bitmap.Save("jeaa2.png");
