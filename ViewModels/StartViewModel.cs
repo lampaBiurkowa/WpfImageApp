@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace WpfImhApp
@@ -61,7 +62,7 @@ namespace WpfImhApp
         public StartViewModel()
         {
             ConvertButtonClickCommand = new ClickCommand(handleConvertButtonClicked, canClickConvertButton);
-            ConvertAsyncButtonClickCommand = new ClickCommand(handleConvertAsyncButtonClicked, canClickConvertButton);
+            ConvertAsyncButtonClickCommand = new ClickCommandAsync(handleConvertAsyncButtonClicked, canClickConvertButton);
             SelectButtonClickCommand = new ClickCommand(handleSelectButtonClicked, canClickSelectButton);
         }
 
@@ -80,13 +81,13 @@ namespace WpfImhApp
             SyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
         }
 
-        private void handleConvertAsyncButtonClicked(object parameter)
+        private async Task handleConvertAsyncButtonClicked()
         {
-            const int THREADS_COUNT = 20;
+            const int THREADS_COUNT = 10;
             ImageConverter converter = new ImageConverter();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            converter.ConvertAsync(ImagePath, THREADS_COUNT).Wait();
+            converter.ConvertAsync(ImagePath, THREADS_COUNT);
             stopwatch.Stop();
             AsyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
         }

@@ -61,7 +61,7 @@ namespace WpfImhApp
             return Color.FromArgb(255, val, val, val);
         }
 
-        public async Task ConvertAsync(string sourcePath, int threadsCount)
+        public void ConvertAsync(string sourcePath, int threadsCount)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width;
