@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,7 +15,7 @@ namespace WpfImhApp
         const float GREEN_FACTOR = 0.58f;
         const float BLUE_FACTOR = 0.11f;
 
-        public void Convert(string sourcePath)
+        public Bitmap Convert(string sourcePath)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width, h = bitmap.Height;
@@ -31,7 +30,7 @@ namespace WpfImhApp
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);
-            bitmap.Save("jea.png");
+            return bitmap;
         }
 
         private void convertRow(byte[] data, int y, int w, int h, int d)
@@ -61,7 +60,7 @@ namespace WpfImhApp
             return Color.FromArgb(255, val, val, val);
         }
 
-        public void ConvertAsync(string sourcePath, int threadsCount)
+        public Bitmap ConvertAsync(string sourcePath, int threadsCount)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width, h = bitmap.Height;
@@ -73,10 +72,16 @@ namespace WpfImhApp
 
             for (int i = 0; i < h; i += threadsCount)
                 Parallel.ForEach(Enumerable.Range(0, threadsCount), j => convertRow(buffer, i + j, w, h, bytesPerPixel));
-            
+
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);
-            bitmap.Save("jeaa2.png");
+            return bitmap;
+        }
+
+        public Bitmap Resize(Bitmap bitmap, int wScale, int hScale)
+        {
+            System.Console.WriteLine((int)(bitmap.Width * (wScale / 100f)));
+            return new Bitmap(bitmap, new Size((int)(bitmap.Width * (wScale / 100f)), (int)(bitmap.Height * (hScale / 100f))));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -60,14 +61,31 @@ namespace WpfImhApp
             }
         }
 
-        private string widthMask;
+        private string heightMask = "100";
+
+        public string HeightMask
+        {
+            get { return heightMask; }
+            set
+            {
+                if (new Regex("[^0-9]+").IsMatch(value) || value.ToString().StartsWith("0") || value.ToString().Length == 0)
+                    return;
+
+                heightMask = value;
+                OnPropertyChange(nameof(HeightMask));
+            }
+        }
+
+        public int Height => int.Parse(HeightMask);
+
+        private string widthMask = "100";
 
         public string WidthMask
         {
             get { return widthMask; }
             set
             {
-                if (!new Regex("[^0-9]+").IsMatch(value))
+                if (new Regex("[^0-9]+").IsMatch(value) || value.ToString().StartsWith("0") || value.ToString().Length == 0)
                     return;
 
                 widthMask = value;
@@ -75,13 +93,7 @@ namespace WpfImhApp
             }
         }
 
-        private int width;
-
-        public int Width
-        {
-            get => int.Parse(WidthMask);
-            set { width = value; }
-        }
+        public int Width => int.Parse(WidthMask);
 
         public StartViewModel()
         {
@@ -100,20 +112,30 @@ namespace WpfImhApp
             ImageConverter converter = new ImageConverter();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            converter.Convert(ImagePath);
+            Bitmap bitmap = converter.Convert(ImagePath);
             stopwatch.Stop();
             SyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
+            bitmap = converter.Resize(bitmap, Width, Height);
+            bitmap.Save("jea.png");
         }
 
         private async Task handleConvertAsyncButtonClicked()
         {
-            const int THREADS_COUNT = 10;
-            ImageConverter converter = new ImageConverter();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            await Task.Factory.StartNew(() => converter.ConvertAsync(ImagePath, THREADS_COUNT));
+            Bitmap bitmap = await getGrayscaleBitmapAsync();
             stopwatch.Stop();
             AsyncTime = $"{stopwatch.ElapsedMilliseconds}ms";
+            ImageConverter converter = new ImageConverter();
+            bitmap = converter.Resize(bitmap, Width, Height);
+            bitmap.Save("jeaasync.png");
+        }
+
+        private async Task<Bitmap> getGrayscaleBitmapAsync()
+        {
+            const int THREADS_COUNT = 10;
+            ImageConverter converter = new ImageConverter();
+            return await Task.Factory.StartNew(() => converter.ConvertAsync(ImagePath, THREADS_COUNT));
         }
 
         private bool canClickSelectButton(object parameter)
