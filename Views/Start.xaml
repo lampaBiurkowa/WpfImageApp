@@ -30,5 +30,8 @@
         <!-- ROW 4 -->
         <Button Grid.Column="1" Grid.Row="4" Command="{Binding ConvertAsyncButtonClickCommand}" Content="Convert image async" Margin="5"/>
         <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding AsyncTime}"/>
+        <!-- ROW 5 -->
+        <TextBlock Grid.Column="1" Grid.Row="5" Text="Target width"/>
+        <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding WidthMask, UpdateSourceTrigger=PropertyChanged}"/>
     </Grid>
 </Window>

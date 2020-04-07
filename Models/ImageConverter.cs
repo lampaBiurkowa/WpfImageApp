@@ -19,14 +19,14 @@ namespace WpfImhApp
         public void Convert(string sourcePath)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
-            int w = bitmap.Width;
-            int h = bitmap.Height;
-            Rectangle rect = new Rectangle(0, 0, w, h);
-            BitmapData data = bitmap.LockBits(rect, ImageLockMode.ReadWrite, bitmap.PixelFormat);
+            int w = bitmap.Width, h = bitmap.Height;
+
+            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, bitmap.PixelFormat);
             int bytesPerPixel = Image.GetPixelFormatSize(data.PixelFormat) / 8;
-            byte[] buffer = new byte[data.Width * data.Height * bytesPerPixel];
+            byte[] buffer = new byte[w * h * bytesPerPixel];
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-            for (int j = 0; j < bitmap.Height; j++)
+
+            for (int j = 0; j < h; j++)
                 convertRow(buffer, j, w, h, bytesPerPixel);
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
@@ -64,17 +64,15 @@ namespace WpfImhApp
         public void ConvertAsync(string sourcePath, int threadsCount)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
-            int w = bitmap.Width;
-            int h = bitmap.Height;
-            Rectangle rect = new Rectangle(0, 0, w, h);
-            BitmapData data = bitmap.LockBits(rect, ImageLockMode.ReadWrite, bitmap.PixelFormat);
+            int w = bitmap.Width, h = bitmap.Height;
+
+            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, bitmap.PixelFormat);
             int bytesPerPixel = Image.GetPixelFormatSize(data.PixelFormat) / 8;
-            byte[] buffer = new byte[data.Width * data.Height * bytesPerPixel];
+            byte[] buffer = new byte[w * h * bytesPerPixel];
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            List<int> range = Enumerable.Range(0, threadsCount).ToList();
-            for (int i = 0; i < bitmap.Height; i += threadsCount)
-                Parallel.ForEach(range, j => convertRow(buffer, i + j, w, h, bytesPerPixel));
+            for (int i = 0; i < h; i += threadsCount)
+                Parallel.ForEach(Enumerable.Range(0, threadsCount), j => convertRow(buffer, i + j, w, h, bytesPerPixel));
             
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);

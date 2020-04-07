@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -57,6 +58,29 @@ namespace WpfImhApp
                 syncTime = value;
                 OnPropertyChange(nameof(SyncTime));
             }
+        }
+
+        private string widthMask;
+
+        public string WidthMask
+        {
+            get { return widthMask; }
+            set
+            {
+                if (!new Regex("[^0-9]+").IsMatch(value))
+                    return;
+
+                widthMask = value;
+                OnPropertyChange(nameof(WidthMask));
+            }
+        }
+
+        private int width;
+
+        public int Width
+        {
+            get => int.Parse(WidthMask);
+            set { width = value; }
         }
 
         public StartViewModel()
