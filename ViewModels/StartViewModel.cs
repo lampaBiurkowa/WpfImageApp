@@ -133,9 +133,8 @@ namespace WpfImhApp
 
         private async Task<Bitmap> getGrayscaleBitmapAsync()
         {
-            const int THREADS_COUNT = 10;
             ImageConverter converter = new ImageConverter();
-            return await Task.Factory.StartNew(() => converter.ConvertAsync(ImagePath, THREADS_COUNT));
+            return await Task.Factory.StartNew(() => converter.ConvertParallelly(ImagePath));
         }
 
         private bool canClickSelectButton(object parameter)

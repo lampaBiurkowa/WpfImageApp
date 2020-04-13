@@ -60,7 +60,7 @@ namespace WpfImhApp
             return Color.FromArgb(255, val, val, val);
         }
 
-        public Bitmap ConvertAsync(string sourcePath, int threadsCount)
+        public Bitmap ConvertParallelly(string sourcePath)
         {
             Bitmap bitmap = new Bitmap(sourcePath);
             int w = bitmap.Width, h = bitmap.Height;
@@ -70,8 +70,7 @@ namespace WpfImhApp
             byte[] buffer = new byte[w * h * bytesPerPixel];
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            for (int i = 0; i < h; i += threadsCount)
-                Parallel.ForEach(Enumerable.Range(0, threadsCount), j => convertRow(buffer, i + j, w, h, bytesPerPixel));
+            Parallel.ForEach(Enumerable.Range(0, h), i => convertRow(buffer, i, w, h, bytesPerPixel));
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
             bitmap.UnlockBits(data);
@@ -80,7 +79,6 @@ namespace WpfImhApp
 
         public Bitmap Resize(Bitmap bitmap, int wScale, int hScale)
         {
-            System.Console.WriteLine((int)(bitmap.Width * (wScale / 100f)));
             return new Bitmap(bitmap, new Size((int)(bitmap.Width * (wScale / 100f)), (int)(bitmap.Height * (hScale / 100f))));
         }
     }
